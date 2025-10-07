@@ -10,7 +10,10 @@ export function ComingSoon({ title, description, tips = [] }: ComingSoonProps) {
   return (
     <section className="mx-auto flex max-w-3xl flex-col gap-6 rounded-3xl border border-border/70 bg-white/80 p-10 text-center shadow-lg backdrop-blur-sm">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-semibold text-foreground sm:text-4xl">{title}</h1>
+        <div className="flex items-center gap-3">
+          <img src="/claire_logo.png" alt="Claire logo" className="h-8 w-8 rounded-md object-contain" />
+          <h1 className="text-3xl font-semibold text-foreground sm:text-4xl">{title}</h1>
+        </div>
         <button
           type="button"
           className="inline-flex items-center justify-center rounded-full border border-border bg-white p-2 text-primary hover:bg-primary/10 focus:outline-none"

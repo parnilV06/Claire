@@ -30,9 +30,11 @@ export function MainLayout({ children }: MainLayoutProps) {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link to="/" className="flex items-center gap-2 text-lg font-bold">
             <span className="relative flex items-center">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20 mr-2">
-                {/* Logo shape or icon can go here if needed */}
-              </span>
+              <img
+                src="/claire_logo.png"
+                alt="Claire logo"
+                className="h-10 w-10 rounded-xl bg-primary/20 object-contain mr-2"
+              />
               <span className="text-primary">Claire</span>
             </span>
           </Link>
@@ -116,12 +118,15 @@ export function MainLayout({ children }: MainLayoutProps) {
       </main>
       <footer className="border-t border-border/60 bg-background/80">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-lg font-semibold text-foreground">Claire</p>
-            <p className="mt-2 max-w-md text-sm text-foreground/70">
-              Empowering dyslexic students with accessible tools, compassionate
-              support, and collaborative guidance for brighter learning journeys. Powered by Claire.
-            </p>
+          <div className="flex items-start gap-3">
+            <img src="/claire_logo.png" alt="Claire logo" className="h-10 w-10 rounded-xl object-contain" />
+            <div>
+              <p className="text-lg font-semibold text-foreground">Claire</p>
+              <p className="mt-2 max-w-md text-sm text-foreground/70">
+                Empowering dyslexic students with accessible tools, compassionate
+                support, and collaborative guidance for brighter learning journeys. Powered by Claire.
+              </p>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4 text-sm text-foreground/70 sm:grid-cols-3">
             <div className="space-y-2">

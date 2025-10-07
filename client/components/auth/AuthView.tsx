@@ -53,10 +53,13 @@ export function AuthView({ initialMode = "login" }: AuthViewProps) {
     <div className="grid gap-10 lg:grid-cols-[1.05fr_1fr]">
       <aside className="flex flex-col justify-between rounded-3xl border border-border/70 bg-gradient-to-br from-primary/25 via-primary/10 to-accent/30 p-10 text-primary-foreground shadow-2xl shadow-primary/20">
         <div className="space-y-6 text-primary-foreground">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+          <div className="flex items-center gap-3">
+            <img src="/claire_logo.png" alt="Claire logo" className="h-10 w-10 rounded-xl object-contain" />
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
             <Shield className="h-4 w-4" />
             Safe &amp; inclusive
           </span>
+          </div>
           <h1 className="text-3xl font-semibold leading-snug sm:text-4xl">
             Welcome back to BrightPath
           </h1>
