@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import { handleSarvamGenerate, handleSarvamTTS } from "./routes/sarvam";
+import { handleOpenRouterChat } from "./routes/openrouter";
 
 export function createServer() {
   const app = express();
@@ -22,6 +23,7 @@ export function createServer() {
   // Proxy route for Sarvam API (server-side, keeps API key secret)
   app.post("/api/sarvam/generate", handleSarvamGenerate);
   app.post("/api/sarvam/tts", handleSarvamTTS);
+  app.post('/api/openrouter/chat', handleOpenRouterChat);
 
   return app;
 }
