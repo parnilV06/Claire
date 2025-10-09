@@ -6,9 +6,11 @@ import path from "path";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080,
+    port: 8081,
     fs: {
-      allow: ["./client", "./shared"],
+      // Allow serving files from project root plus client/shared folders.
+      // `index.html` lives at the project root so we must include "./" here.
+      allow: ["./", "./client", "./shared"],
       deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "server/**"],
     },
   },
