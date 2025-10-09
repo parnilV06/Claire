@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 type SpeakOptions = {
   target_language_code?: string;
@@ -26,18 +26,40 @@ export function useSpeechSynthesis() {
     return chunks;
   }
 
-  // Play chunks sequentially, support cancel
-  const audioRefs: HTMLAudioElement[] = [];
-  let cancelRequested = false;
+  // Play chunks sequentially, support cancel. Use refs so values persist across renders.
+  const audioRefs = useRef<HTMLAudioElement[]>([]);
+  const cancelRequested = useRef(false);
+
   const speak = async (text: string, options: SpeakOptions = {}) => {
     setIsSpeaking(true);
     setAudioUrl(null);
-    cancelRequested = false;
-    audioRefs.length = 0;
+    cancelRequested.current = false;
+    audioRefs.current.length = 0;
     const apiKey = import.meta.env.VITE_SARVAM_API_KEY;
     const chunks = splitText(text);
+
+    // If no API key present, fall back to browser SpeechSynthesis
+    if (!apiKey && typeof window !== "undefined" && 'speechSynthesis' in window) {
+      try {
+        for (const chunk of chunks) {
+          if (cancelRequested.current) break;
+          await new Promise<void>((resolve) => {
+            const utter = new SpeechSynthesisUtterance(chunk);
+            utter.lang = options.target_language_code || 'en-IN';
+            utter.onend = () => resolve();
+            utter.onerror = () => resolve();
+            window.speechSynthesis.speak(utter);
+          });
+        }
+      } catch (err) {
+        console.error('Browser TTS error:', err);
+      }
+      setIsSpeaking(false);
+      return;
+    }
+
     for (let i = 0; i < chunks.length; i++) {
-      if (cancelRequested) break;
+      if (cancelRequested.current) break;
       try {
         const response = await fetch("https://api.sarvam.ai/text-to-speech", {
           method: "POST",
@@ -53,16 +75,16 @@ export function useSpeechSynthesis() {
         });
         if (!response.ok) throw new Error("TTS request failed");
         const data = await response.json();
-        let audioUrl = null;
+        let audioDataUrl = null;
         if (Array.isArray(data?.audios) && data.audios.length > 0) {
           const base64 = data.audios[0];
-          audioUrl = `data:audio/wav;base64,${base64}`;
+          audioDataUrl = `data:audio/wav;base64,${base64}`;
         }
-        setAudioUrl(audioUrl);
-        if (audioUrl) {
+        setAudioUrl(audioDataUrl);
+        if (audioDataUrl) {
           await new Promise((resolve, reject) => {
-            const audio = new Audio(audioUrl);
-            audioRefs.push(audio);
+            const audio = new Audio(audioDataUrl);
+            audioRefs.current.push(audio);
             audio.onended = resolve;
             audio.onerror = reject;
             audio.play();
@@ -74,16 +96,21 @@ export function useSpeechSynthesis() {
       }
     }
     setIsSpeaking(false);
-    audioRefs.length = 0;
+    audioRefs.current.length = 0;
   };
 
   const cancel = () => {
-    cancelRequested = true;
-    audioRefs.forEach(audio => {
-      audio.pause();
-      audio.currentTime = 0;
+    cancelRequested.current = true;
+    audioRefs.current.forEach(audio => {
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch {}
     });
-    audioRefs.length = 0;
+    audioRefs.current.length = 0;
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try { window.speechSynthesis.cancel(); } catch {}
+    }
     setIsSpeaking(false);
     setAudioUrl(null);
   };
