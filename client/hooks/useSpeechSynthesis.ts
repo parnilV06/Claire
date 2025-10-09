@@ -38,22 +38,9 @@ export function useSpeechSynthesis() {
     const apiKey = import.meta.env.VITE_SARVAM_API_KEY;
     const chunks = splitText(text);
 
-    // If no API key present, fall back to browser SpeechSynthesis
-    if (!apiKey && typeof window !== "undefined" && 'speechSynthesis' in window) {
-      try {
-        for (const chunk of chunks) {
-          if (cancelRequested.current) break;
-          await new Promise<void>((resolve) => {
-            const utter = new SpeechSynthesisUtterance(chunk);
-            utter.lang = options.target_language_code || 'en-IN';
-            utter.onend = () => resolve();
-            utter.onerror = () => resolve();
-            window.speechSynthesis.speak(utter);
-          });
-        }
-      } catch (err) {
-        console.error('Browser TTS error:', err);
-      }
+    // Require Sarvam API key to use Sarvam TTS
+    if (!apiKey) {
+      console.error("VITE_SARVAM_API_KEY is not set. Sarvam TTS requires an API key.");
       setIsSpeaking(false);
       return;
     }
