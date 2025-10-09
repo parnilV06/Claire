@@ -164,3 +164,41 @@ Example of a good question:
     });
   }
 };
+
+export const handleSarvamTTS: RequestHandler = async (req, res) => {
+  try {
+    const apiKey = process.env.SARVAM_API_KEY || process.env.VITE_SARVAM_API_KEY;
+    if (!apiKey) {
+      console.error('[Sarvam TTS] No API key configured on server');
+      return res.status(500).json({ error: 'Sarvam API key not configured on server' });
+    }
+
+    const { text, target_language_code = 'en-IN', speaker = 'anushka' } = req.body || {};
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({ error: 'Missing text in request body' });
+    }
+
+    // Call Sarvam text-to-speech
+    const response = await fetch('https://api.sarvam.ai/text-to-speech', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'api-subscription-key': apiKey
+      },
+      body: JSON.stringify({ text, target_language_code, speaker })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('[Sarvam TTS] API error', response.status, errText);
+      return res.status(502).json({ error: 'Sarvam TTS upstream error', details: errText });
+    }
+
+    const data = await response.json();
+    // Return whatever the Sarvam API returns (usually audios: [base64])
+    return res.json(data);
+  } catch (err: any) {
+    console.error('[Sarvam TTS] Unexpected error', err);
+    return res.status(500).json({ error: 'Internal server error', details: err.message });
+  }
+};

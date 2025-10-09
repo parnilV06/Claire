@@ -35,95 +35,54 @@ export function useSpeechSynthesis() {
     setAudioUrl(null);
     cancelRequested.current = false;
     audioRefs.current.length = 0;
-    const apiKey = import.meta.env.VITE_SARVAM_API_KEY;
     const chunks = splitText(text);
-
-    // Require Sarvam API key to use Sarvam TTS
-    if (!apiKey) {
-      console.error("VITE_SARVAM_API_KEY is not set. Sarvam TTS requires an API key.");
-      setIsSpeaking(false);
-      return;
-    }
 
     for (let i = 0; i < chunks.length; i++) {
       if (cancelRequested.current) break;
       try {
-          let response = await fetch("https://api.sarvam.ai/text-to-speech", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "api-subscription-key": apiKey ?? "",
-            },
-            body: JSON.stringify({
-              text: chunks[i],
-              target_language_code: options.target_language_code || "en-IN",
-              speaker: options.speaker || "anushka"
-            }),
-          });
+        // Proxy through our server-side endpoint so the API key stays secret in production
+        let response = await fetch(`/api/sarvam/tts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: chunks[i],
+            target_language_code: options.target_language_code || "en-IN",
+            speaker: options.speaker || "anushka",
+          }),
+        });
 
-          // If first attempt failed, try with Authorization Bearer header (some Sarvam setups expect Bearer)
-          if (!response.ok) {
-            console.warn("Sarvam TTS primary request failed, retrying with Authorization header", response.status);
-            try {
-              response = await fetch("https://api.sarvam.ai/text-to-speech", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${apiKey ?? ""}`,
-                },
-                body: JSON.stringify({
-                  text: chunks[i],
-                  target_language_code: options.target_language_code || "en-IN",
-                  speaker: options.speaker || "anushka"
-                }),
-              });
-            } catch (e) {
-              console.error("Sarvam retry request error", e);
-            }
+        if (!response.ok) {
+          const errText = await response.text().catch(() => "");
+          throw new Error(`TTS proxy failed ${response.status} ${errText}`);
+        }
+
+        // Handle JSON or binary responses from the proxy (proxy forwards Sarvam response)
+        const contentType = response.headers.get("content-type") || "";
+        let audioDataUrl: string | null = null;
+        if (contentType.includes("application/json")) {
+          const data = await response.json();
+          if (Array.isArray(data?.audios) && data.audios.length > 0) {
+            audioDataUrl = `data:audio/wav;base64,${data.audios[0]}`;
+          } else if (data?.audioUrl) {
+            audioDataUrl = data.audioUrl;
+          } else if (data?.audio) {
+            audioDataUrl = `data:audio/wav;base64,${data.audio}`;
           }
-
-          if (!response.ok) {
-            // Try to read error body for debugging
-            let errText = "";
-            try { errText = await response.text(); } catch {}
-            throw new Error(`TTS request failed ${response.status} ${errText}`);
-          }
-
-          // Handle JSON or binary responses.
-          const contentType = response.headers.get("content-type") || "";
-          let audioDataUrl: string | null = null;
-          if (contentType.includes("application/json")) {
+        } else if (contentType.startsWith("audio/")) {
+          const blob = await response.blob();
+          audioDataUrl = URL.createObjectURL(blob);
+        } else {
+          try {
             const data = await response.json();
-            // multiple common shapes
             if (Array.isArray(data?.audios) && data.audios.length > 0) {
-              const base64 = data.audios[0];
-              audioDataUrl = `data:audio/wav;base64,${base64}`;
-            } else if (typeof data === "string" && data.length > 100) {
-              // maybe returns base64 string directly
-              audioDataUrl = `data:audio/wav;base64,${data}`;
+              audioDataUrl = `data:audio/wav;base64,${data.audios[0]}`;
             } else if (data?.audioUrl) {
               audioDataUrl = data.audioUrl;
-            } else if (data?.audio) {
-              // sometimes response uses `audio`
-              audioDataUrl = `data:audio/wav;base64,${data.audio}`;
             }
-          } else if (contentType.startsWith("audio/")) {
-            // binary audio response
-            const blob = await response.blob();
-            audioDataUrl = URL.createObjectURL(blob);
-          } else {
-            // unknown content-type; try parse as json first
-            try {
-              const data = await response.json();
-              if (Array.isArray(data?.audios) && data.audios.length > 0) {
-                audioDataUrl = `data:audio/wav;base64,${data.audios[0]}`;
-              } else if (data?.audioUrl) {
-                audioDataUrl = data.audioUrl;
-              }
-            } catch (err) {
-              console.warn("Unknown Sarvam response shape", err);
-            }
+          } catch (err) {
+            console.warn("Unknown proxy response shape", err);
           }
+        }
         setAudioUrl(audioDataUrl);
         if (audioDataUrl) {
           await new Promise((resolve, reject) => {

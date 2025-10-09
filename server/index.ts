@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
-import { handleSarvamGenerate } from "./routes/sarvam.ts";
+import { handleSarvamGenerate, handleSarvamTTS } from "./routes/sarvam";
 
 export function createServer() {
   const app = express();
@@ -21,6 +21,7 @@ export function createServer() {
   app.get("/api/demo", handleDemo);
   // Proxy route for Sarvam API (server-side, keeps API key secret)
   app.post("/api/sarvam/generate", handleSarvamGenerate);
+  app.post("/api/sarvam/tts", handleSarvamTTS);
 
   return app;
 }
