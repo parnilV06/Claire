@@ -5,7 +5,8 @@
 
 
 [functions]
-  external_node_modules = ["express"]
+  # We moved TTS proxy to a standalone function; avoid bundling express.
+  external_node_modules = []
   node_bundler = "esbuild"
   
 [[redirects]]
@@ -13,3 +14,9 @@
   from = "/api/*"
   status = 200
   to = "/.netlify/functions/api/:splat"
+
+[[redirects]]
+  force = true
+  from = "/api/sarvam/tts"
+  to = "/.netlify/functions/sarvam-tts-proxy"
+  status = 200
