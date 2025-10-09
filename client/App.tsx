@@ -17,6 +17,7 @@ import ToolsPage from "./pages/Tools";
 import HistoryPage from "./pages/History";
 import SupportPage from "./pages/Support";
 import QuizPage from "./pages/Quiz";
+import AssessmentPage from "./pages/Assessment";
 
 const queryClient = new QueryClient();
 
@@ -35,19 +36,7 @@ const App = () => (
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/support" element={<SupportPage />} />
               <Route path="/quiz" element={<QuizPage />} />
-            <Route
-              path="/assessment"
-              element={
-                <ComingSoon
-                  title="Guided assessment"
-                  description="This flow will adapt reading, writing, and sensory prompts to build a unique support profile. Let me know when you want the full assessment experience implemented."
-                  tips={[
-                    "Blend voice and text questions for accessibility.",
-                    "Capture energy levels, triggers, and calming supports.",
-                  ]}
-                />
-              }
-            />
+            <Route path="/assessment" element={<AssessmentPage />} />
             <Route
               path="/dashboard"
               element={
