@@ -65,13 +65,18 @@
     Access-Control-Allow-Headers = "Content-Type"
     Access-Control-Allow-Methods = "POST, OPTIONS"
 
-# Serve static assets
+# Serve static assets and JSON files
 [[redirects]]
   from = "/assets/*"
   to = "/assets/:splat"
   status = 200
 
-# SPA fallback
+[[redirects]]
+  from = "/*.json"
+  to = "/:splat"
+  status = 200
+
+# SPA fallback - must be last
 [[redirects]]
   from = "/*"
   to = "/index.html"

@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: "dist/spa",
     assetsDir: "assets",
+    copyPublicDir: true, // Ensure public directory is copied
     rollupOptions: {
       output: {
         manualChunks: undefined,
