@@ -7,6 +7,18 @@
   external_node_modules = []
   node_bundler = "esbuild"
 
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    "Cache-Control" = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    "X-Frame-Options" = "DENY"
+    "X-XSS-Protection" = "1; mode=block"
+    "X-Content-Type-Options" = "nosniff"
+
 # API routes to serverless functions
 [[redirects]]
   from = "/api/*"
@@ -17,6 +29,12 @@
 [[redirects]]
   from = "/api/sarvam/tts"
   to = "/.netlify/functions/sarvam-tts-proxy"
+  status = 200
+
+# Assets and public files
+[[redirects]]
+  from = "/assets/*"
+  to = "/assets/:splat"
   status = 200
 
 # SPA fallback - must be last
