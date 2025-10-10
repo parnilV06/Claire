@@ -4,6 +4,7 @@ import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import { handleSarvamGenerate, handleSarvamTTS } from "./routes/sarvam";
 import { handleOpenRouterChat } from "./routes/openrouter";
+import { handleHFStatus } from "./routes/hf_status";
 
 export function createServer() {
   const app = express();
@@ -24,6 +25,7 @@ export function createServer() {
   app.post("/api/sarvam/generate", handleSarvamGenerate);
   app.post("/api/sarvam/tts", handleSarvamTTS);
   app.post('/api/openrouter/chat', handleOpenRouterChat);
+  app.get('/api/hf/status', handleHFStatus);
 
   return app;
 }
