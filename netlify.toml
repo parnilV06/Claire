@@ -7,28 +7,38 @@
   node_bundler = "esbuild"
 
 [[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-
-[[headers]]
-  for = "*.css"
-  [headers.values]
-    Content-Type = "text/css"
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "*.js"
-  [headers.values]
-    Content-Type = "application/javascript"
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/*.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+
+[[headers]]
+  for = "/assets/*.css"
+  [headers.values]
+    Content-Type = "text/css; charset=utf-8"
+
+# Handle all assets first
+[[redirects]]
+  from = "/assets/*"
+  to = "/assets/:splat"
+  status = 200
+
+# API endpoints
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+# SPA fallback - must be last
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = true
 
 # API endpoints
 [[redirects]]

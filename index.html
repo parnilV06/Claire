@@ -6,9 +6,16 @@
     <title>Claire — Calmer learning journeys</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   </head>
-
   <body>
     <div id="root"></div>
     <script type="module" src="/client/App.tsx"></script>
+    <script>
+      // Fallback for 404 errors on direct asset URLs
+      window.addEventListener('error', function(e) {
+        if (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK') {
+          window.location.reload();
+        }
+      }, true);
+    </script>
   </body>
 </html>
