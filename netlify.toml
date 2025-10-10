@@ -13,8 +13,14 @@
   force = true
   from = "/api/*"
   status = 200
-  to = "/.netlify/functions/api/:splat"
+  to = "/.netlify/functions/api/api/:splat"
 
+[[redirects]]
+  force = true
+  from = "/*"
+  status = 200
+  to = "/index.html"
+  
 [[redirects]]
   force = true
   from = "/api/sarvam/tts"
