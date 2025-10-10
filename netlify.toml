@@ -7,15 +7,21 @@
   external_node_modules = []
   node_bundler = "esbuild"
 
+# API routes to serverless functions
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
 
+# TTS proxy redirect
+[[redirects]]
+  from = "/api/sarvam/tts"
+  to = "/.netlify/functions/sarvam-tts-proxy"
+  status = 200
+
+# SPA fallback - must be last
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
   force = true
-  to = "/.netlify/functions/sarvam-tts-proxy"
-  status = 200
