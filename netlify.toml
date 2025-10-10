@@ -7,10 +7,28 @@
   external_node_modules = []
   node_bundler = "esbuild"
 
+[build.processing]
+  skip_processing = false
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  pretty_urls = true
+
+[build.processing.images]
+  compress = true
+
 [[headers]]
   for = "/assets/*"
   [headers.values]
     "Cache-Control" = "public, max-age=31536000, immutable"
+    "Content-Type" = "application/javascript; charset=utf-8"
 
 [[headers]]
   for = "/*"
@@ -19,25 +37,35 @@
     "X-XSS-Protection" = "1; mode=block"
     "X-Content-Type-Options" = "nosniff"
 
-# API routes to serverless functions
+# Handle preflight requests
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
+  force = true
+  [redirects.headers]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Content-Type"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
 
-# TTS proxy redirect
+# TTS proxy endpoint
 [[redirects]]
   from = "/api/sarvam/tts"
   to = "/.netlify/functions/sarvam-tts-proxy"
   status = 200
+  force = true
+  [redirects.headers]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Content-Type"
+    Access-Control-Allow-Methods = "POST, OPTIONS"
 
-# Assets and public files
+# Serve static assets
 [[redirects]]
   from = "/assets/*"
   to = "/assets/:splat"
   status = 200
 
-# SPA fallback - must be last
+# SPA fallback
 [[redirects]]
   from = "/*"
   to = "/index.html"
