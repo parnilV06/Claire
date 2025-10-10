@@ -17,7 +17,7 @@ Guidelines:
 
 // It’s better to load from env var in production
 const GEMINI_API_KEY = 'AIzaSyCz6wiaJRMeTkR7-oC86rU6Cke747nqSzE'
-const MODEL_NAME = "gemini-2.5-flash"
+const MODEL_NAME = "gemini-2.5-flash";  
 // You can try "gemini-2.5-pro" or other supported models based on your quota/permission.
 
 const ai = new GoogleGenAI({
