@@ -1,28 +1,21 @@
 [build]
-  command = "npm run build:client"
+  command = "npm run build"
   functions = "netlify/functions"
   publish = "dist/spa"
 
-
 [functions]
-  # We moved TTS proxy to a standalone function; avoid bundling express.
   external_node_modules = []
   node_bundler = "esbuild"
-  
-[[redirects]]
-  force = true
-  from = "/api/*"
-  status = 200
-  to = "/.netlify/functions/api/api/:splat"
 
 [[redirects]]
-  force = true
-  from = "/*"
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
   status = 200
-  to = "/index.html"
-  
+
 [[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
   force = true
-  from = "/api/sarvam/tts"
   to = "/.netlify/functions/sarvam-tts-proxy"
   status = 200

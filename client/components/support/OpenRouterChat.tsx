@@ -26,7 +26,7 @@ export function OpenRouterChat() {
 
     try {
       const payload = { conversation: newMessages.filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content })), message: userMsg.content };
-      const res = await fetch((window.location.hostname === 'localhost' ? '' : '/.netlify/functions/api') + '/api/openrouter/chat', {
+      const res = await fetch('/api/openrouter/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
