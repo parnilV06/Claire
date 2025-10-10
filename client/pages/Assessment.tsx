@@ -71,7 +71,7 @@ export default function AssessmentPage() {
   const [result, setResult] = useState<any | null>(null);
 
   useEffect(() => {
-    fetch(import.meta.env.BASE_URL + "dyslexia_assessment.json")
+    fetch("/dyslexia_assessment.json")
       .then((r) => r.json())
       .then((json) => {
         setData(json);
