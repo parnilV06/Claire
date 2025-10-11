@@ -27,7 +27,27 @@
   to = "/assets/:splat"
   status = 200
 
-# Static JSON files - must come before API redirects
+# Static files - must come before API redirects
+[[redirects]]
+  from = "/claire_logo.png"
+  to = "/claire_logo.png"
+  status = 200
+
+[[redirects]]
+  from = "/favicon.ico"
+  to = "/favicon.ico"
+  status = 200
+
+[[redirects]]
+  from = "/placeholder.svg"
+  to = "/placeholder.svg"
+  status = 200
+
+[[redirects]]
+  from = "/robots.txt"
+  to = "/robots.txt"
+  status = 200
+
 [[redirects]]
   from = "/dyslexia_assessment.json"
   to = "/dyslexia_assessment.json"
