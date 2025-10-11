@@ -2,7 +2,7 @@
 // npm install express @google/genai
 
 import { RequestHandler } from "express";
-import { GoogleGenAI, GenerateContentRequest } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 
 const SYSTEM_PROMPT = `You are a compassionate, supportive AI therapy assistant for students with dyslexia aged 8-18.
 Your role: provide emotional support for anxiety, low self-esteem, and frustration from learning challenges.
@@ -39,7 +39,7 @@ export const handleOpenRouterChat: RequestHandler = async (req, res) => {
       .join("\n");
     const fullPrompt = `${SYSTEM_PROMPT}\n\n${historyText}\nUser: ${userMessage}\nAssistant:`;
 
-    const requestPayload: GenerateContentRequest = {
+    const requestPayload = {
       model: MODEL_NAME,
       contents: [
         {

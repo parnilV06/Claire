@@ -8,23 +8,35 @@ export function useSarvamTTS() {
   async function speak(text: string) {
     setIsSpeaking(true);
     setAudioUrl(null);
-    const apiKey = import.meta.env.VITE_SARVAM_API_KEY;
     try {
-      const response = await fetch("https://api.sarvam.ai/text-to-speech", {
+      const response = await fetch("/api/sarvam/tts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "api-subscription-key": apiKey ?? "",
         },
         body: JSON.stringify({ text }),
       });
-      if (!response.ok) throw new Error("TTS request failed");
-      const data = await response.json();
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => "");
+        throw new Error(`TTS request failed: ${errorText}`);
+      }
+
+      // Handle different response types from the proxy
+      const contentType = response.headers.get("content-type") || "";
       let audioDataUrl: string | null = null;
-      if (Array.isArray(data?.audios) && data.audios.length > 0) {
-        audioDataUrl = `data:audio/wav;base64,${data.audios[0]}`;
-      } else if (data?.audioUrl) {
-        audioDataUrl = data.audioUrl;
+
+      if (contentType.includes("application/json")) {
+        const data = await response.json();
+        if (Array.isArray(data?.audios) && data.audios.length > 0) {
+          audioDataUrl = `data:audio/wav;base64,${data.audios[0]}`;
+        } else if (data?.audioUrl) {
+          audioDataUrl = data.audioUrl;
+        }
+      } else if (contentType.startsWith("audio/")) {
+        // Binary audio response
+        const arrayBuffer = await response.arrayBuffer();
+        const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+        audioDataUrl = `data:${contentType};base64,${base64}`;
       }
       setAudioUrl(audioDataUrl);
       if (audioDataUrl) {

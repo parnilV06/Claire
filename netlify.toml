@@ -27,29 +27,32 @@
   to = "/assets/:splat"
   status = 200
 
-# API endpoints
+# Static JSON files - must come before API redirects
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/api/:splat"
+  from = "/dyslexia_assessment.json"
+  to = "/dyslexia_assessment.json"
   status = 200
 
-# SPA fallback - must be last
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = true
-
-# API endpoints
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/api/:splat"
-  status = 200
-
-# TTS endpoint
+# Specific API endpoints
 [[redirects]]
   from = "/api/sarvam/tts"
   to = "/.netlify/functions/sarvam-tts-proxy"
+  status = 200
+
+[[redirects]]
+  from = "/api/openrouter/chat"
+  to = "/.netlify/functions/openrouter-chat"
+  status = 200
+
+[[redirects]]
+  from = "/api/sarvam/generate"
+  to = "/.netlify/functions/sarvam-quiz"
+  status = 200
+
+# General API endpoints fallback
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
   status = 200
 
 # SPA fallback - must be last

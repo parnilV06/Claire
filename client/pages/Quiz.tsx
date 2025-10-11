@@ -11,7 +11,7 @@ async function fetchQuizFromSarvam(text: string) {
   const prompt = text.trim();
 
   try {
-    const response = await fetch(`${window.location.hostname === 'localhost' ? '' : '/.netlify/functions/api'}/api/sarvam/generate`, {
+    const response = await fetch("/api/sarvam/generate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

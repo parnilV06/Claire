@@ -71,14 +71,32 @@ export default function AssessmentPage() {
   const [result, setResult] = useState<any | null>(null);
 
   useEffect(() => {
-    fetch("/dyslexia_assessment.json")
-      .then((r) => r.json())
-      .then((json) => {
-        setData(json);
-    const picked = pickRandomQuestions(json.categories, 15);
-        setQuestions(picked);
-      })
-      .catch((err) => console.error("Failed to load assessment JSON", err));
+    // Try multiple possible paths for the assessment JSON
+    const possiblePaths = [
+      "/dyslexia_assessment.json",
+      "./dyslexia_assessment.json",
+      "dyslexia_assessment.json"
+    ];
+
+    const loadAssessment = async () => {
+      for (const path of possiblePaths) {
+        try {
+          const response = await fetch(path);
+          if (response.ok) {
+            const json = await response.json();
+            setData(json);
+            const picked = pickRandomQuestions(json.categories, 15);
+            setQuestions(picked);
+            return;
+          }
+        } catch (err) {
+          console.warn(`Failed to load assessment from ${path}:`, err);
+        }
+      }
+      console.error("Failed to load assessment JSON from all paths");
+    };
+
+    loadAssessment();
   }, []);
 
   useEffect(() => {
