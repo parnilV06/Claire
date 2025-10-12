@@ -55,7 +55,7 @@ Project Name: Claire
 
 Tagline: “Read Clearly. Learn Freely.”
 
-(https://claire-by-prismatics.netlify.app/)
+https://claire-by-prismatics.netlify.app/ : website link
 
 Team Name- Prismatic
 1) Sasmit Narnaware
