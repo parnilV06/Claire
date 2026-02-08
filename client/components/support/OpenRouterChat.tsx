@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { GroqChatResponse } from '@shared/api';
 
 type Message = { role: 'user' | 'assistant' | 'system'; content: string };
 
@@ -26,7 +27,7 @@ export function OpenRouterChat() {
 
     try {
       const payload = { conversation: newMessages.filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content })), message: userMsg.content };
-      const res = await fetch('/api/openrouter/chat', {
+      const res = await fetch('/api/groq/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -44,7 +45,7 @@ export function OpenRouterChat() {
         }
       }
 
-      const json = await res.json();
+      const json: GroqChatResponse = await res.json();
       const ai = json.content || 'Sorry, I did not understand that.';
       const assistantMsg: Message = { role: 'assistant', content: ai };
       setMessages(prev => [...prev, assistantMsg]);
@@ -55,7 +56,7 @@ export function OpenRouterChat() {
       }
 
     } catch (err: any) {
-      console.error('[OpenRouterChat] send error', err);
+      console.error('[GroqChat] send error', err);
       const message = err?.message;
       // Show friendly but informative error
       if (message && message.length < 200) {
