@@ -55,6 +55,11 @@
 
 # Specific API endpoints
 [[redirects]]
+  from = "/api/groq/chat"
+  to = "/.netlify/functions/groqChat"
+  status = 200
+
+[[redirects]]
   from = "/api/sarvam/tts"
   to = "/.netlify/functions/sarvam-tts-proxy"
   status = 200
