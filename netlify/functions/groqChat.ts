@@ -63,11 +63,23 @@ export const handler: Handler = async (event, context) => {
       };
     }
 
-    // Safely parse the request body
-    const body = event.body ? JSON.parse(event.body) : {};
+    // Safely parse the request body - event.body is a string from Netlify
+    let body;
+    try {
+      body = JSON.parse(event.body || "{}");
+    } catch (parseErr) {
+      console.error("[GroqChat] Failed to parse request body:", event.body, parseErr);
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Invalid JSON in request body' }),
+      };
+    }
 
-    // Validate required fields
-    if (!body.message || typeof body.message !== 'string') {
+    // Extract and validate message
+    const message = body.message;
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      console.error("[GroqChat] Missing or empty message field. Body:", body);
       return {
         statusCode: 400,
         headers,
@@ -76,7 +88,7 @@ export const handler: Handler = async (event, context) => {
     }
 
     const conversation = Array.isArray(body.conversation) ? body.conversation : [];
-    const userMessage = body.message.trim();
+    const userMessage = message.trim();
 
     // Build conversation history for Groq
     const messageHistory = [
