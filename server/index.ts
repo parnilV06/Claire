@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import { handleSarvamGenerate, handleSarvamTTS } from "./routes/sarvam";
-import { handleOpenRouterChat } from "./routes/openrouter";
+import { handleGroqChat } from "./routes/groqChat";
 import { handleHFStatus } from "./routes/hf_status";
 
 export function createServer() {
@@ -24,7 +24,8 @@ export function createServer() {
   // Proxy route for Sarvam API (server-side, keeps API key secret)
   app.post("/api/sarvam/generate", handleSarvamGenerate);
   app.post("/api/sarvam/tts", handleSarvamTTS);
-  app.post('/api/openrouter/chat', handleOpenRouterChat);
+  // Groq API route for therapy chat
+  app.post('/api/groq/chat', handleGroqChat);
   app.get('/api/hf/status', handleHFStatus);
 
   return app;

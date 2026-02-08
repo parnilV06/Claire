@@ -10,3 +10,15 @@
 export interface DemoResponse {
   message: string;
 }
+
+/**
+ * Response type for /api/groq/chat (Groq AI therapy chat)
+ */
+export interface GroqChatResponse {
+  success: boolean;
+  content?: string;
+  isCrisis?: boolean;
+  model?: string;
+  error?: string;
+  details?: string;
+}
