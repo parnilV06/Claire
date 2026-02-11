@@ -37,7 +37,7 @@ const complexToSimpleMap: Record<string, string> = {
 };
 
 const defaultText =
-  "BrightPath helps me break big reading tasks into calming steps. It reminds me to breathe, adjust my font and spacing, and listen while I follow along.";
+  "Claire helps me break big reading tasks into calming steps. It reminds me to breathe, adjust my font and spacing, and listen while I follow along.";
 
 export function ToolsShowcase() {
   // Single shared TTS hook (handles Sarvam API or browser fallback)
@@ -91,7 +91,7 @@ export function ToolsShowcase() {
     setSummary(generateSummary(inputText));
     setMindMap(createMindMap(inputText));
     try {
-      localStorage.setItem("brightpath.lastInput", inputText);
+      localStorage.setItem("Claire.lastInput", inputText);
     } catch {}
   }, [inputText]);
 
@@ -145,7 +145,7 @@ export function ToolsShowcase() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "brightpath-notes.txt";
+    link.download = "claire-notes.txt";
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -380,12 +380,12 @@ export function ToolsShowcase() {
             <div className="mt-6 flex gap-4">
               <button
                 type="button"
-                className="rounded-md border border-border/60 bg-accent/10 px-4 py-2 text-accent font-medium shadow-sm hover:bg-accent/20"
+                className="rounded-md border border-border/60 bg-accent/20 px-4 py-2 text-primary font-medium shadow-sm hover:bg-accent/50"
                   onClick={() => generateAISummary(inputText)}
               >
                 Generate Dyslexia-Friendly AI Summary
               </button>
-              {aiSummary && (
+              {aiSummary && ( 
                 <div className="rounded-xl border border-border/60 bg-white/80 p-4 text-base text-foreground max-w-md">
                   {aiSummary}
                 </div>

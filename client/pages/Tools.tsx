@@ -4,10 +4,10 @@ import { useCallback } from "react";
 export default function ToolsPage() {
   const handleSaveToHistory = useCallback((content: string) => {
     try {
-      const raw = localStorage.getItem("brightpath.history");
+      const raw = localStorage.getItem("claire.history");
       const list = raw ? (JSON.parse(raw) as Array<any>) : [];
       const item = { id: crypto.randomUUID(), content, createdAt: Date.now() };
-      localStorage.setItem("brightpath.history", JSON.stringify([item, ...list]));
+      localStorage.setItem("claire.history", JSON.stringify([item, ...list]));
     } catch {}
   }, []);
   return (

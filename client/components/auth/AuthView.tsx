@@ -39,6 +39,7 @@ export function AuthView({ initialMode = "login" }: AuthViewProps) {
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [role, setRole] = useState<RoleOption>(roleOptions[0]);
   const [consentAccepted, setConsentAccepted] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const headerCopy = useMemo(() => authCopy[mode], [mode]);
 
@@ -51,37 +52,37 @@ export function AuthView({ initialMode = "login" }: AuthViewProps) {
 
   return (
     <div className="grid gap-10 lg:grid-cols-[1.05fr_1fr]">
-      <aside className="flex flex-col justify-between rounded-3xl border border-border/70 bg-gradient-to-br from-primary/25 via-primary/10 to-accent/30 p-10 text-primary-foreground shadow-2xl shadow-primary/20">
-        <div className="space-y-6 text-primary-foreground">
+      <aside className="flex flex-col justify-between rounded-3xl border border-border/70 bg-gradient-to-br from-primary/25 via-primary/10 to-accent/30 p-10 text-black shadow-2xl shadow-primary/20">
+        <div className="space-y-6 text-black">
           <div className="flex items-center gap-3">
             <img src="/claire_logo.png" alt="Claire logo" className="h-10 w-10 rounded-xl object-contain" />
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-black">
             <Shield className="h-4 w-4" />
             Safe &amp; inclusive
           </span>
           </div>
-          <h1 className="text-3xl font-semibold leading-snug sm:text-4xl">
-            Welcome back to BrightPath
+          <h1 className="text-3xl font-semibold leading-snug sm:text-4xl text-black">
+            Welcome back to Claire
           </h1>
-          <p className="text-base leading-relaxed text-primary-foreground/80">
+          <p className="text-base leading-relaxed text-black">
             Sign in to access calming learning journeys, AI coaching, and shared progress dashboards designed for dyslexic students and their support circles.
           </p>
         </div>
-        <div className="space-y-4 text-sm text-primary-foreground/90">
+        <div className="space-y-4 text-black">
           <FeatureRow
             icon={GraduationCap}
             title="Personalized accessibility"
-            description="Automated profiles adjust fonts, spacing, and TTS pacing for every session."
+            description={<span className="text-black">Automated profiles adjust fonts, spacing, and TTS pacing for every session.</span>}
           />
           <FeatureRow
             icon={HeartHandshake}
             title="Shared guidance"
-            description="Parents and teachers receive emotional support scripts and progress highlights."
+            description={<span className="text-black">Parents and teachers receive emotional support scripts and progress highlights.</span>}
           />
-          <div className="rounded-2xl bg-white/20 p-4 text-xs text-primary-foreground/80">
-            <p className="font-semibold uppercase tracking-[0.2em]">Wellness tip</p>
-            <p className="mt-2">
-              BrightPath begins each session with a grounding exercise to reduce anxiety. Celebrate each small win!
+          <div className="rounded-2xl bg-white/20 p-4 text-xs text-black">
+            <p className="font-semibold uppercase tracking-[0.2em] text-black">Wellness tip</p>
+            <p className="mt-2 text-black">
+              Claire begins each session with a grounding exercise to reduce anxiety. Celebrate each small win!
             </p>
           </div>
         </div>
@@ -157,22 +158,35 @@ export function AuthView({ initialMode = "login" }: AuthViewProps) {
 
           <label className="block text-sm font-semibold text-foreground" htmlFor="password">
             Password
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
-              placeholder="Minimum 8 characters"
-              className="mt-2 w-full rounded-2xl border border-border/70 bg-white/70 px-4 py-3 text-sm text-foreground shadow-inner focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                required
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+                placeholder="Minimum 8 characters"
+                className="mt-2 w-full rounded-2xl border border-border/70 bg-white/70 px-4 py-3 text-sm text-foreground shadow-inner focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 flex items-center pr-3"
+              >
+                <img
+                  src="./public/eye.png"
+                  alt="Toggle password visibility"
+                  className="h-5 w-5 text-gray-500"
+                />
+              </button>
+            </div>
           </label>
 
           {mode === "signup" ? (
             <>
               <fieldset className="space-y-3 rounded-2xl border border-border/60 bg-muted/40 p-4">
                 <legend className="px-2 text-sm font-semibold text-foreground">
-                  I will use BrightPath as
+                  I will use Claire as
                 </legend>
                 {roleOptions.map((option) => (
                   <label
@@ -224,7 +238,7 @@ export function AuthView({ initialMode = "login" }: AuthViewProps) {
                   required
                 />
                 <span>
-                  I agree to BrightPath's privacy promise and confirm I have consent to create this account.
+                  I agree to Claire's privacy promise and confirm I have consent to create this account.
                 </span>
               </label>
             </>
@@ -251,7 +265,7 @@ export function AuthView({ initialMode = "login" }: AuthViewProps) {
           <div className="text-center text-xs text-foreground/60">
             {mode === "login" ? (
               <p>
-                New to BrightPath?{" "}
+                New to Claire?{" "}
                 <button
                   type="button"
                   className="font-semibold text-primary hover:underline"
@@ -328,7 +342,7 @@ const authCopy: Record<
     ],
   },
   signup: {
-    title: "Create your BrightPath account",
+    title: "Create your Claire account",
     subtitle: "Set up dyslexia-friendly tools, invite supporters, and receive a calming onboarding experience immediately.",
     cta: "Create account",
     reassurance: [

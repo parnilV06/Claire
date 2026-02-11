@@ -172,7 +172,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         </div>
         <div className="border-t border-border/50 bg-background/60 py-4">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 text-xs text-foreground/60">
-            <p>&copy; {new Date().getFullYear()} Claire Labs. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Claire. All rights reserved.</p>
             <div className="flex items-center gap-4">
               <Link to="/terms" className="hover:text-primary">
                 Terms
