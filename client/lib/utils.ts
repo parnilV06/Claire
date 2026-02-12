@@ -8,6 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 export type HistoryItem = {
   id: string;
   content: string;
+  summary?: string;
   createdAt: number;
 };
 

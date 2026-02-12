@@ -4,6 +4,7 @@ import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import { handleSarvamGenerate, handleSarvamTTS } from "./routes/sarvam";
 import { handleGroqChat } from "./routes/groqChat";
+import { handleGroqTools } from "./routes/groqTools";
 import { handleHFStatus } from "./routes/hf_status";
 
 export function createServer() {
@@ -26,6 +27,8 @@ export function createServer() {
   app.post("/api/sarvam/tts", handleSarvamTTS);
   // Groq API route for therapy chat
   app.post('/api/groq/chat', handleGroqChat);
+  // Groq API route for tools (summary + quiz)
+  app.post("/api/groq/tools", handleGroqTools);
   app.get('/api/hf/status', handleHFStatus);
 
   return app;

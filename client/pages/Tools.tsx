@@ -1,13 +1,16 @@
 import { ToolsShowcase } from "@/components/sections/ToolsShowcase";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 export default function ToolsPage() {
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const handleSaveToHistory = useCallback((content: string) => {
     try {
-      const raw = localStorage.getItem("claire.history");
+      const raw = localStorage.getItem("brightpath.history");
       const list = raw ? (JSON.parse(raw) as Array<any>) : [];
       const item = { id: crypto.randomUUID(), content, createdAt: Date.now() };
-      localStorage.setItem("claire.history", JSON.stringify([item, ...list]));
+      localStorage.setItem("brightpath.history", JSON.stringify([item, ...list]));
+      setSaveMessage("Saved to history.");
+      setTimeout(() => setSaveMessage(null), 2200);
     } catch {}
   }, []);
   return (
@@ -24,6 +27,9 @@ export default function ToolsPage() {
         >
           Save to history
         </button>
+        {saveMessage ? (
+          <div className="mt-2 text-xs text-emerald-600">{saveMessage}</div>
+        ) : null}
       </div>
     </div>
   );
