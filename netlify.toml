@@ -60,13 +60,13 @@
   status = 200
 
 [[redirects]]
-  from = "/api/sarvam/tts"
-  to = "/.netlify/functions/sarvam-tts-proxy"
+  from = "/api/groq/tools"
+  to = "/.netlify/functions/groq-tools"
   status = 200
 
 [[redirects]]
-  from = "/api/openrouter/chat"
-  to = "/.netlify/functions/openrouter-chat"
+  from = "/api/sarvam/tts"
+  to = "/.netlify/functions/sarvam-tts-proxy"
   status = 200
 
 [[redirects]]

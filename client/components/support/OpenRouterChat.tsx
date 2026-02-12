@@ -210,7 +210,7 @@ export function OpenRouterChat() {
       )}
 
       {/* Normal View */}
-      <div className="max-w-3xl">
+      <div className="mx-auto w-full max-w-5xl">
         {showDisclaimer && (
           <div className="mb-4 rounded-md border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-900">
             <strong>Disclaimer:</strong> This AI support tool is not a replacement for professional therapy. If you are in crisis or need urgent help, contact local emergency services immediately.

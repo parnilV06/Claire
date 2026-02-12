@@ -68,7 +68,7 @@ export default function HistoryPage() {
       </section>
 
       <section>
-        <h2 className="text-2xl font-semibold text-foreground mb-4">Text History</h2>
+        <h2 className="text-2xl font-semibold text-foreground mb-4">Canvas History</h2>
         {items.length === 0 ? (
           <p className="text-sm text-foreground/70">No saved items yet. Export from Tools to add entries.</p>
         ) : (
@@ -81,6 +81,12 @@ export default function HistoryPage() {
                     {new Date(item.createdAt).toLocaleString()}
                   </p>
                   <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/80">{item.content}</p>
+                  {item.summary ? (
+                    <div className="mt-3 rounded-xl border border-border/60 bg-muted/30 p-3 text-sm text-foreground/80 whitespace-pre-line">
+                      <p className="text-xs font-semibold text-foreground/60">Summary</p>
+                      <p className="mt-1">{item.summary}</p>
+                    </div>
+                  ) : null}
                 </li>
               ))}
           </ul>

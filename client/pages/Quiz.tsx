@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 // Get inputText from localStorage (set by ToolsShowcase)
 
-async function fetchQuizFromSarvam(text: string) {
+async function fetchQuizFromGroq(text: string) {
   // First validate input
   if (!text || !text.trim()) {
     throw new Error("Please provide text to generate quiz from");
@@ -11,40 +11,46 @@ async function fetchQuizFromSarvam(text: string) {
   const prompt = text.trim();
 
   try {
-    const response = await fetch("/api/sarvam/generate", {
+    const response = await fetch("/api/groq/tools", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({ text: prompt, type: "quiz" }),
     });
 
     // Parse error response
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      console.error("Sarvam proxy error:", response.status, errorData);
+      console.error("Groq tools error:", response.status, errorData);
       throw new Error(errorData?.error || "Failed to generate quiz. Please try again.");
     }
 
     // Get response data
     const data = await response.json();
 
+    const questions = Array.isArray(data?.questions)
+      ? data.questions
+      : Array.isArray(data?.fallback?.questions)
+        ? data.fallback.questions
+        : [];
+
     // Validate response format
-    if (!data || !Array.isArray(data.questions) || data.questions.length === 0) {
+    if (!questions.length) {
       console.error("Invalid quiz format:", data);
-      throw new Error("Quiz generation failed. Please try again.");
+      throw new Error(data?.error || "Quiz generation failed. Please try again.");
     }
 
     // Validate each question has required fields
-    for (const q of data.questions) {
-      if (!q.question || !Array.isArray(q.options) || q.options.length !== 4 || 
+    for (const q of questions) {
+      if (!q.question || !Array.isArray(q.options) || q.options.length !== 4 ||
           typeof q.answer !== 'number' || q.answer < 0 || q.answer > 3) {
         console.error("Invalid question format:", q);
         throw new Error("Quiz format was invalid. Please try again.");
       }
     }
 
-    return data.questions;
+    return questions;
   } catch (err) {
     console.error("Quiz generation error:", err);
     throw err;
@@ -59,6 +65,8 @@ export default function QuizPage() {
   const [finished, setFinished] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [saveMessageTone, setSaveMessageTone] = useState<"success" | "error" | null>(null);
 
   const fetchQuiz = async () => {
     setLoading(true);
@@ -73,7 +81,7 @@ export default function QuizPage() {
       return;
     }
     try {
-      const q = await fetchQuizFromSarvam(text);
+      const q = await fetchQuizFromGroq(text);
       setQuestions(q);
     } catch (err: any) {
         console.error("Quiz generation error:", err);
@@ -175,7 +183,7 @@ export default function QuizPage() {
         <div className="text-center space-y-4">
           <p className="text-lg font-semibold">Quiz finished!</p>
           <p className="text-base">Your score: {score} / {questions.length}</p>
-          <div className="flex justify-center gap-4 mt-4">
+          <div className="flex flex-wrap justify-center gap-4 mt-4">
             <Button onClick={() => {
               // Save to quiz history
               try {
@@ -190,8 +198,14 @@ export default function QuizPage() {
                   createdAt: Date.now()
                 });
                 localStorage.setItem("brightpath.quizHistory", JSON.stringify(quizHistory));
+                setSaveMessage("Quiz saved to history.");
+                setSaveMessageTone("success");
+                setTimeout(() => setSaveMessage(null), 2200);
               } catch (err) {
                 console.error("Failed to save quiz:", err);
+                setSaveMessage("Could not save quiz.");
+                setSaveMessageTone("error");
+                setTimeout(() => setSaveMessage(null), 2200);
               }
             }} variant="outline">Save to History</Button>
             <Button onClick={() => {
@@ -200,7 +214,15 @@ export default function QuizPage() {
               setFinished(false);
               setSelected(null);
             }} variant="default">Retake Quiz</Button>
+            <Button onClick={() => {
+              window.location.href = "/tools";
+            }} variant="secondary">Back to Tools</Button>
           </div>
+          {saveMessage ? (
+            <div className={`mt-3 text-xs ${saveMessageTone === "error" ? "text-red-500" : "text-emerald-600"}`}>
+              {saveMessage}
+            </div>
+          ) : null}
         </div>
       ) : (
         <div>
