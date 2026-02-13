@@ -1,9 +1,10 @@
 import { FormEvent, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Check, GraduationCap, HeartHandshake, Shield } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabaseClient";
 
 type AuthMode = "login" | "signup";
 
@@ -40,14 +41,90 @@ export function AuthView({ initialMode = "login" }: AuthViewProps) {
   const [role, setRole] = useState<RoleOption>(roleOptions[0]);
   const [consentAccepted, setConsentAccepted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = (location.state as { from?: string } | null)?.from || "/tools";
 
   const headerCopy = useMemo(() => authCopy[mode], [mode]);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError(null);
+    setSuccessMessage(null);
+    setLoading(true);
+
     const formData = new FormData(event.currentTarget);
-    const payload = Object.fromEntries(formData.entries());
-    console.table({ mode, ...payload, role: role.value, consentAccepted });
+    const email = String(formData.get("email") || "").trim();
+    const password = String(formData.get("password") || "");
+    const confirmPassword = String(formData.get("confirmPassword") || "");
+    const fullName = String(formData.get("fullName") || "").trim();
+
+    if (!email || !password) {
+      setError("Please enter your email and password.");
+      setLoading(false);
+      return;
+    }
+
+    if (mode === "signup") {
+      if (password.length < 8) {
+        setError("Password should be at least 8 characters.");
+        setLoading(false);
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError("Passwords do not match.");
+        setLoading(false);
+        return;
+      }
+    }
+
+    try {
+      if (mode === "signup") {
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+              role: role.value,
+            },
+          },
+        });
+
+        if (signUpError) {
+          setError(signUpError.message);
+        } else if (data?.user && !data.session) {
+          try {
+            localStorage.setItem("claire.onboardingPrompt", "1");
+          } catch {}
+          setSuccessMessage("Check your email to confirm your account.");
+        } else {
+          try {
+            localStorage.setItem("claire.onboardingPrompt", "1");
+          } catch {}
+          navigate(redirectTo, { replace: true });
+        }
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (signInError) {
+          setError(signInError.message);
+        } else {
+          navigate(redirectTo, { replace: true });
+        }
+      }
+    } catch (err: any) {
+      console.error("[Auth] Unexpected error:", err);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -258,9 +335,21 @@ export function AuthView({ initialMode = "login" }: AuthViewProps) {
             type="submit"
             size="lg"
             className="w-full rounded-full px-4 text-base font-semibold shadow-lg shadow-primary/40"
+            disabled={loading}
           >
-            {headerCopy.cta}
+            {loading ? "Please wait..." : headerCopy.cta}
           </Button>
+
+          {error ? (
+            <div className="rounded-xl border border-border/60 bg-white/80 p-3 text-sm text-red-500">
+              {error}
+            </div>
+          ) : null}
+          {successMessage ? (
+            <div className="rounded-xl border border-border/60 bg-white/80 p-3 text-sm text-emerald-600">
+              {successMessage}
+            </div>
+          ) : null}
 
           <div className="text-center text-xs text-foreground/60">
             {mode === "login" ? (

@@ -7,6 +7,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { ComingSoon } from "@/components/common/ComingSoon";
 import Index from "./pages/Index";
@@ -18,25 +20,56 @@ import HistoryPage from "./pages/History";
 import SupportPage from "./pages/Support";
 import QuizPage from "./pages/Quiz";
 import AssessmentPage from "./pages/Assessment";
+import ProfilePage from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/tools" element={<ToolsPage />} />
-            <Route path="/history" element={<HistoryPage />} />
-            <Route path="/support" element={<SupportPage />} />
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/tools" element={<ToolsPage />} />
+              <Route
+                path="/history"
+                element={
+                  <ProtectedRoute>
+                    <HistoryPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/support"
+                element={
+                  <ProtectedRoute>
+                    <SupportPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/quiz" element={<QuizPage />} />
-            <Route path="/assessment" element={<AssessmentPage />} />
+              <Route
+                path="/assessment"
+                element={
+                  <ProtectedRoute>
+                    <AssessmentPage />
+                  </ProtectedRoute>
+                }
+              />
             <Route
               path="/dashboard"
               element={
@@ -46,19 +79,6 @@ const App = () => (
                   tips={[
                     "Progress streaks and mood timelines.",
                     "Quick links to supportive exercises and AI reflections.",
-                  ]}
-                />
-              }
-            />
-            <Route
-              path="/support"
-              element={
-                <ComingSoon
-                  title="Therapy & support pathways"
-                  description="Connect with specialists, NGOs, and guided emotional resources tailored to each learner. Prompt again for full build-out."
-                  tips={[
-                    "Live chat with emotional companion.",
-                    "Scheduling with therapists and group circles.",
                   ]}
                 />
               }
@@ -99,11 +119,12 @@ const App = () => (
                 />
               }
             />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
