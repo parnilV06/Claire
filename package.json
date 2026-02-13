@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.23.0",
+    "@supabase/supabase-js": "^2.95.3",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "groq-sdk": "^0.37.0",

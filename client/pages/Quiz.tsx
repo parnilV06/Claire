@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { UsageLimitDialog } from "@/components/auth/UsageLimitDialog";
+import { hasReachedLimit, incrementUsage } from "@/lib/usageLimits";
+import { insertQuizAttempt } from "@/lib/supabaseData";
 // Get inputText from localStorage (set by ToolsShowcase)
 
 async function fetchQuizFromGroq(text: string) {
@@ -67,6 +71,8 @@ export default function QuizPage() {
   const [error, setError] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveMessageTone, setSaveMessageTone] = useState<"success" | "error" | null>(null);
+  const [limitDialogOpen, setLimitDialogOpen] = useState(false);
+  const { user } = useAuth();
 
   const fetchQuiz = async () => {
     setLoading(true);
@@ -80,7 +86,15 @@ export default function QuizPage() {
       setLoading(false);
       return;
     }
+    if (!user && hasReachedLimit("quiz")) {
+      setLoading(false);
+      setLimitDialogOpen(true);
+      return;
+    }
     try {
+      if (!user) {
+        incrementUsage("quiz");
+      }
       const q = await fetchQuizFromGroq(text);
       setQuestions(q);
     } catch (err: any) {
@@ -162,6 +176,11 @@ export default function QuizPage() {
           <li>Click generate quiz</li>
         </ol>
         <Button onClick={fetchQuiz} variant="outline">Generate Quiz</Button>
+        <UsageLimitDialog
+          open={limitDialogOpen}
+          onOpenChange={setLimitDialogOpen}
+          featureLabel="AI quiz"
+        />
       </div>
     );
   }
@@ -184,20 +203,30 @@ export default function QuizPage() {
           <p className="text-lg font-semibold">Quiz finished!</p>
           <p className="text-base">Your score: {score} / {questions.length}</p>
           <div className="flex flex-wrap justify-center gap-4 mt-4">
-            <Button onClick={() => {
+            <Button onClick={async () => {
               // Save to quiz history
               try {
                 const quizHistory = JSON.parse(localStorage.getItem("brightpath.quizHistory") || "[]");
                 const text = localStorage.getItem("brightpath.lastInput") || "";
-                quizHistory.push({
+                const item = {
                   id: Date.now().toString(),
                   questions,
                   score,
                   totalQuestions: questions.length,
                   text: text.slice(0, 100) + "...", // Preview of text
                   createdAt: Date.now()
-                });
+                };
+                quizHistory.push(item);
                 localStorage.setItem("brightpath.quizHistory", JSON.stringify(quizHistory));
+                if (user?.id) {
+                  await insertQuizAttempt(user.id, {
+                    questions,
+                    score,
+                    totalQuestions: questions.length,
+                    text,
+                    createdAt: item.createdAt,
+                  });
+                }
                 setSaveMessage("Quiz saved to history.");
                 setSaveMessageTone("success");
                 setTimeout(() => setSaveMessage(null), 2200);
@@ -248,6 +277,11 @@ export default function QuizPage() {
           </button>
         </div>
       )}
+      <UsageLimitDialog
+        open={limitDialogOpen}
+        onOpenChange={setLimitDialogOpen}
+        featureLabel="AI quiz"
+      />
     </div>
   );
 }

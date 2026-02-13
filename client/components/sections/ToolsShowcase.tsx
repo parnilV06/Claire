@@ -3,6 +3,10 @@ import type { CSSProperties } from "react";
 import { Download, Mic, MicOff, Play, Sparkles, StopCircle, Upload, Maximize2, Minimize2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { UsageLimitDialog } from "@/components/auth/UsageLimitDialog";
+import { hasReachedLimit, incrementUsage, UsageFeature } from "@/lib/usageLimits";
+import { insertSummary } from "@/lib/supabaseData";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { cn } from "@/lib/utils";
@@ -56,6 +60,8 @@ export function ToolsShowcase() {
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [summarySavedMessage, setSummarySavedMessage] = useState<string | null>(null);
+  const [limitDialogOpen, setLimitDialogOpen] = useState(false);
+  const [limitFeatureLabel, setLimitFeatureLabel] = useState<string>("feature");
   const generateAISummary = async (text?: string) => {
     const summaryText = text ?? inputText;
     if (!summaryText.trim()) {
@@ -123,6 +129,7 @@ export function ToolsShowcase() {
     stop,
     setTranscript,
   } = useSpeechRecognition();
+  const { user } = useAuth();
 
   useEffect(() => {
     setSimplifiedText(simplifyText(inputText));
@@ -204,7 +211,23 @@ export function ToolsShowcase() {
     start();
   };
 
-  const handleSaveSummaryToHistory = () => {
+  const handleLimitedAction = (feature: UsageFeature, label: string, action: () => void) => {
+    if (user) {
+      action();
+      return;
+    }
+
+    if (hasReachedLimit(feature)) {
+      setLimitFeatureLabel(label);
+      setLimitDialogOpen(true);
+      return;
+    }
+
+    incrementUsage(feature);
+    action();
+  };
+
+  const handleSaveSummaryToHistory = async () => {
     if (!inputText.trim()) {
       setSummaryError("Paste or type your text first.");
       return;
@@ -224,6 +247,13 @@ export function ToolsShowcase() {
         createdAt: Date.now(),
       };
       localStorage.setItem("brightpath.history", JSON.stringify([item, ...list]));
+      if (user?.id) {
+        await insertSummary(user.id, {
+          sourceText: inputText,
+          summaryText: aiSummary,
+          createdAt: item.createdAt,
+        });
+      }
       setSummaryError(null);
       setSummarySavedMessage("Saved to history.");
       setTimeout(() => setSummarySavedMessage(null), 2200);
@@ -377,7 +407,11 @@ export function ToolsShowcase() {
                   <button
                     type="button"
                     className="rounded-md border border-border/60 bg-primary/10 p-2 text-primary shadow-sm hover:bg-primary/20"
-                    onClick={() => sarvamSpeak(previewText, { speaker: sarvamVoice })}
+                    onClick={() =>
+                      handleLimitedAction("tts", "text-to-speech", () =>
+                        sarvamSpeak(previewText, { speaker: sarvamVoice }),
+                      )
+                    }
                     aria-label="Play with Sarvam AI TTS"
                   >
                     <Sparkles className="h-4 w-4" />
@@ -425,12 +459,14 @@ export function ToolsShowcase() {
                 type="button"
                 className="rounded-md border border-border/60 bg-primary/10 px-4 py-2 text-primary font-medium shadow-sm hover:bg-primary/20"
                 onClick={() => {
-                  // Clear any existing quiz
-                  localStorage.removeItem("brightpath.lastQuiz");
-                  // Save current text
-                  localStorage.setItem("brightpath.lastInput", inputText);
-                  // Navigate to quiz
-                  window.location.href = '/quiz';
+                  handleLimitedAction("quiz", "AI quiz", () => {
+                    // Clear any existing quiz
+                    localStorage.removeItem("brightpath.lastQuiz");
+                    // Save current text
+                    localStorage.setItem("brightpath.lastInput", inputText);
+                    // Navigate to quiz
+                    window.location.href = "/quiz";
+                  });
                 }}
               >
                 Start AI Quiz
@@ -438,17 +474,11 @@ export function ToolsShowcase() {
             </div>
           </article>
           <article className="rounded-3xl border border-border/70 bg-gradient-to-br from-secondary/40 via-white/80 to-accent/30 p-6 shadow-lg backdrop-blur-sm">
-            <h3 className="text-lg font-semibold text-foreground">Emotional regulation toolkit</h3>
-            <ul className="mt-3 space-y-2 text-sm text-foreground/75">
-              <li>• Calming audio chimes when overwhelm is detected</li>
-              <li>• Mood tracker synced with parents and teachers</li>
-              <li>• AI prompts for self-advocacy and celebrating victories</li>
-            </ul>
-            <div className="mt-6 flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4">
               <button
                 type="button"
                 className="rounded-md border border-border/60 bg-accent/20 px-4 py-2 text-primary font-medium shadow-sm hover:bg-accent/50 disabled:opacity-60"
-                onClick={() => generateAISummary(inputText)}
+                onClick={() => handleLimitedAction("summary", "AI summary", () => generateAISummary(inputText))}
                 disabled={summaryLoading}
               >
                 {summaryLoading ? "Generating summary..." : "Generate Dyslexia-Friendly AI Summary"}
@@ -493,7 +523,7 @@ export function ToolsShowcase() {
               <button
                 type="button"
                 className="rounded-md border border-border/60 bg-white/90 p-2 text-primary shadow-sm hover:bg-primary/10"
-                onClick={() => sarvamSpeak(previewText)}
+                onClick={() => handleLimitedAction("tts", "text-to-speech", () => sarvamSpeak(previewText))}
                 disabled={isSarvamSpeaking}
                 aria-label="Play with Sarvam AI TTS"
               >
@@ -506,6 +536,11 @@ export function ToolsShowcase() {
           </div>
         </div>
       ) : null}
+      <UsageLimitDialog
+        open={limitDialogOpen}
+        onOpenChange={setLimitDialogOpen}
+        featureLabel={limitFeatureLabel}
+      />
     </section>
   );
 }

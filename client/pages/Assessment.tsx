@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { useAuth } from "@/contexts/AuthContext";
+import { fetchLatestAssessmentResult, insertAssessmentResult } from "@/lib/supabaseData";
 
 type Option = { value: string; label: string; score: number };
 type Question = {
@@ -69,6 +71,7 @@ export default function AssessmentPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [userId, setUserId] = useState<string | null>(null);
   const [result, setResult] = useState<any | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     // Try multiple possible paths for the assessment JSON
@@ -100,9 +103,10 @@ export default function AssessmentPage() {
   }, []);
 
   useEffect(() => {
-    const storedId = localStorage.getItem("claire_user_id");
-    if (storedId) setUserId(storedId);
-  }, []);
+    if (user?.id) {
+      setUserId(user.id);
+    }
+  }, [user?.id]);
 
   const total = questions?.length ?? 0;
 
@@ -111,12 +115,33 @@ export default function AssessmentPage() {
   useEffect(() => {
     // if userId and stored results exist, load and block
     if (!userId) return;
-    const stored = localStorage.getItem(STORAGE_PREFIX + userId);
-    if (stored) {
+
+    const loadResult = async () => {
       try {
-        setResult(JSON.parse(stored));
-      } catch {}
-    }
+        const latest = await fetchLatestAssessmentResult(userId);
+        if (latest) {
+          setResult({
+            assessmentDate: latest.assessment_date,
+            totalScore: latest.total_score,
+            severityLevel: latest.severity_level,
+            categoryScores: latest.category_scores,
+            responses: [],
+          });
+          return;
+        }
+      } catch (err) {
+        console.error("[Assessment] Failed to load result:", err);
+      }
+
+      const stored = localStorage.getItem(STORAGE_PREFIX + userId);
+      if (stored) {
+        try {
+          setResult(JSON.parse(stored));
+        } catch {}
+      }
+    };
+
+    loadResult();
   }, [userId]);
 
   const handleSelect = (qid: string, value: string) => {
@@ -130,7 +155,7 @@ export default function AssessmentPage() {
     if (current > 0) setCurrent((c) => c - 1);
   };
 
-  const computeAndSave = (id: string) => {
+  const computeAndSave = async (id: string) => {
     if (!questions || !data) return;
     const responses: any[] = [];
     const categoryScores: Record<string, number> = {};
@@ -166,17 +191,21 @@ export default function AssessmentPage() {
 
     localStorage.setItem(STORAGE_PREFIX + id, JSON.stringify(payload));
     setResult(payload);
+
+    try {
+      const { error } = await insertAssessmentResult(id, payload);
+      if (error) {
+        console.error("[Assessment] Database error:", error);
+      } else {
+        console.log("[Assessment] Result saved to database successfully");
+      }
+    } catch (err) {
+      console.error("[Assessment] Failed to save result to database:", err);
+    }
   };
 
   const onSubmit = () => {
-    if (!userId) {
-      const id = window.prompt("Enter a user id to save your assessment results (this will block retakes):");
-      if (!id) return;
-      localStorage.setItem("claire_user_id", id);
-      setUserId(id);
-      computeAndSave(id);
-      return;
-    }
+    if (!userId) return;
     // confirm
     if (!window.confirm("Submit assessment? This will save your results and block retakes.")) return;
     computeAndSave(userId);

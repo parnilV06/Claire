@@ -1,9 +1,17 @@
 import { useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, User, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navItems = [
   { to: "/", label: "Home" },
@@ -20,6 +28,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   const content = children ?? <Outlet />;
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   const toggleMenu = () => setIsOpen((prev) => !prev);
   const closeMenu = () => setIsOpen(false);
@@ -60,11 +69,30 @@ export function MainLayout({ children }: MainLayoutProps) {
             })}
           </nav>
           <div className="hidden items-center gap-3 md:flex">
-            <Link to="/login">
-              <Button variant="ghost" className="rounded-full px-6">
-                Log in
-              </Button>
-            </Link>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="rounded-full px-4">
+                    <User className="mr-2 h-4 w-4" /> Profile
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile">View profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link to="/login">
+                <Button variant="ghost" className="rounded-full px-6">
+                  Log in
+                </Button>
+              </Link>
+            )}
             <Link to="/assessment">
               <Button className="rounded-full px-6 shadow-lg shadow-primary/40">
                 Start assessment
@@ -103,9 +131,27 @@ export function MainLayout({ children }: MainLayoutProps) {
                   </NavLink>
                 );
               })}
-              <Link to="/login" onClick={closeMenu} className="rounded-xl px-3 py-2">
-                Log in
-              </Link>
+              {user ? (
+                <>
+                  <Link to="/profile" onClick={closeMenu} className="rounded-xl px-3 py-2">
+                    Profile
+                  </Link>
+                  <button
+                    type="button"
+                    className="rounded-xl px-3 py-2 text-left"
+                    onClick={() => {
+                      signOut();
+                      closeMenu();
+                    }}
+                  >
+                    Log out
+                  </button>
+                </>
+              ) : (
+                <Link to="/login" onClick={closeMenu} className="rounded-xl px-3 py-2">
+                  Log in
+                </Link>
+              )}
               <Link to="/assessment" onClick={closeMenu} className="rounded-xl px-3 py-2">
                 Start assessment
               </Link>
@@ -134,7 +180,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               <Link to="/#tools" className="block hover:text-primary">
                 Learning tools
               </Link>
-              <Link to="/dashboard" className="block hover:text-primary">
+              <Link to="/profile" className="block hover:text-primary">
                 Student dashboard
               </Link>
               <Link to="/tools" className="block hover:text-primary">
@@ -158,9 +204,6 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
             <div className="space-y-2">
               <p className="font-semibold text-foreground">Resources</p>
-              <Link to="/login" className="block hover:text-primary">
-                Parent portal
-              </Link>
               <Link to="/support" className="block hover:text-primary">
                 Emotional guidance
               </Link>
