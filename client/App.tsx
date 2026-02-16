@@ -21,6 +21,9 @@ import SupportPage from "./pages/Support";
 import QuizPage from "./pages/Quiz";
 import AssessmentPage from "./pages/Assessment";
 import ProfilePage from "./pages/Profile";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsAndConditions from "./pages/TermsAndConditions";
+import Accessibility from "./pages/Accessibility";
 
 const queryClient = new QueryClient();
 
@@ -83,33 +86,9 @@ const App = () => (
                 />
               }
             />
-            <Route
-              path="/privacy"
-              element={
-                <ComingSoon
-                  title="Privacy promise"
-                  description="Outline data safeguards, consent controls, and family privacy settings here."
-                />
-              }
-            />
-            <Route
-              path="/terms"
-              element={
-                <ComingSoon
-                  title="Terms of use"
-                  description="Define community guidelines and accessibility commitments for BrightPath."
-                />
-              }
-            />
-            <Route
-              path="/accessibility"
-              element={
-                <ComingSoon
-                  title="Accessibility statement"
-                  description="Document inclusive design standards, testing practices, and assistive technology support."
-                />
-              }
-            />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsAndConditions />} />
+            <Route path="/accessibility" element={<Accessibility />} />
             <Route
               path="/contact"
               element={
